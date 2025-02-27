@@ -71,16 +71,22 @@ def create_single_PDF(common_info, prd_info):
     common_table = Table(common_data, colWidths=colWidths)
     common_table.setStyle(style1)
 
+    if prd_info["타입"] == "지퍼 안쪽":
+        zipper = "<-- 안쪽 지퍼"
+    else:
+        zipper = ""
     prd_data1 = [
         ["외피", f"{prd_info['외피']}", ""],
         ["내피", f"{prd_info['내피']}", ""],
         ["실색(자수)", f"{prd_info['실색']}", ""],
-        ["장식", f"{prd_info['장식']}", ""]
+        ["장식", f"{prd_info['장식']}", zipper]
     ]
+
+    heel_hights = prd_info["굽높이"].split("cm")[0]
 
     prd_data2 = [
         ["라스트", f"{prd_info['라스트']}", ""],
-        ["굽", f"{prd_info['사용굽']}", ""],
+        ["굽", f"{prd_info['사용굽']}", f"{heel_hights}"],
         ["중창", f"{prd_info['중창']}", ""],
         ["중창싸개", f"{prd_info['중창싸게']}", ""],
         ["창", f"{prd_info['창']}", ""],
@@ -112,8 +118,15 @@ def create_single_PDF(common_info, prd_info):
     left_table = Table([[prd_table1], [prd_table2]])
     layout = Table([[left_table, prd_img]])
 
+    if prd_info["타입"] == "실외용":
+        requirements = "실외용 - 선심 길게"
+    else:
+        requirements = ""
+
     bottom_data1 = [
-        ["특이사항", f"{prd_info['추가요청사항']}"]
+        ["특이사항", f"{prd_info['추가요청사항']}"],
+        ["", requirements],
+        ["", f"{prd_info['규격']}({prd_info['수량(단위포함)']})"]
     ]
 
     bottom_data2 = [
