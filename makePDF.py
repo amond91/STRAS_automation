@@ -21,7 +21,7 @@ def create_pdf(common_info, selected_products):
     font_path = "font/NotoSansKR-Regular.ttf"
     pdfmetrics.registerFont(TTFont("NotoSansKR", font_path))
 
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), topMargin=0, bottomMargin=0)
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), topMargin=50, bottomMargin=50, leftMargin=50, rightMargin=50)
     elements = []
 
     for _, row in selected_products.iterrows():
@@ -36,6 +36,7 @@ def create_pdf(common_info, selected_products):
 def create_single_PDF(common_info, prd_info):
     width, height = landscape(A4)
 
+    # Nan 값 공백으로 대체
     for k in prd_info.keys():
         if pd.isna(prd_info[k]):
             prd_info[k] = ""
@@ -63,13 +64,15 @@ def create_single_PDF(common_info, prd_info):
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),  # 테두리 설정
     ])
 
-    # ✅ A4 가로 너비를 8개의 열로 균등 분배 (여백 50 유지)
-    table_width = width - 50  # 좌우 여백 50씩 제외
-    colWidths = [93, 93, 40, 240, 60, 60, 60, 60]
+    # ✅ 전체 너비 : 700
+    col_widths = [90, 90, 40, 200, 70, 70, 70, 70]
 
     # ✅ 테이블 생성
-    common_table = Table(common_data, colWidths=colWidths)
+    # common_table = Table(common_data)
+    common_table = Table(common_data, colWidths=col_widths)
     common_table.setStyle(style1)
+
+    top_table = Table([[common_table]])
 
     if prd_info["타입"] == "지퍼 안쪽":
         zipper = "<-- 안쪽 지퍼"
@@ -98,25 +101,33 @@ def create_single_PDF(common_info, prd_info):
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),  # 테두리 설정
     ])
 
-    table_width = (width)/2  # 좌우 여백 50씩 제외
-    col_width = table_width / 4  # 각 열의 너비 계산
-    colWidths = [col_width/2, col_width, col_width]
+    no_padding = TableStyle([
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+        ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+        ('VALIGN', (1, 0), (1, 0), 'MIDDLE')
+    ])
 
-    prd_table1 = Table(prd_data1, colWidths=colWidths)
+    col_widths = [70, 180, 80]
+
+    prd_table1 = Table(prd_data1, colWidths=col_widths)
     prd_table1.setStyle(style2)
 
-    prd_table2 = Table(prd_data2, colWidths=colWidths)
+    prd_table2 = Table(prd_data2, colWidths=col_widths)
     prd_table2.setStyle(style2)
 
-
     prd_image_path = f"images/products/{prd_info['CODE']}.jpg"
-    if not os.path.exists((prd_image_path)):
+    if not os.path.exists(prd_image_path):
         prd_image_path = "images/products/no_product.jpg"
 
-    prd_img = Image(prd_image_path, width=750/3, height=500/3)
+    scale = 2.7
+    prd_img = Image(prd_image_path, width=750/scale, height=500/scale)
 
     left_table = Table([[prd_table1], [prd_table2]])
     layout = Table([[left_table, prd_img]])
+    layout.setStyle(no_padding)
 
     if prd_info["타입"] == "실외용":
         requirements = "실외용 - 선심 길게"
@@ -152,17 +163,20 @@ def create_single_PDF(common_info, prd_info):
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),  # 테두리 설정
     ])
 
-    bottom_table1 = Table(bottom_data1)
+    bottom_table1 = Table(bottom_data1, colWidths=[70, 630])
     bottom_table1.setStyle((style3))
-    bottom_table2 = Table(bottom_data2)
+    bottom_table_upper = Table([[bottom_table1]])
+
+    bottom_table2 = Table(bottom_data2, colWidths=[70, 130])
     bottom_table2.setStyle((style3))
     bottom_table3 = Table(bottom_data3)
     bottom_table3.setStyle((style3))
 
-    bottom_table = Table([[bottom_table1], [bottom_table2, bottom_table3]])
+    bottom_table = Table([[bottom_table2, bottom_table3]])
+
 
     # ✅ 테이블을 Story에 추가하여 PDF 생성
-    elements = [common_table, layout, bottom_table]
+    elements = [top_table, layout, bottom_table_upper, bottom_table]
 
 
     # table_x = width - table_width  # 우측 정렬 (여백 고려)

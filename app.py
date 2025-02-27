@@ -1,15 +1,10 @@
 import streamlit as st
-import pandas as pd
-from io import BytesIO
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+
 from POM import *
 from makePDF import create_pdf
 
 # 제목
-st.title("📄 작업지시서 생성기")
+st.title("📄 STRAS 작업지시서 생성기")
 
 # 파일 업로드
 uploaded_file = st.file_uploader("📂 발주서(엑셀 파일)을 업로드하세요", type=["xlsx"])
@@ -23,6 +18,7 @@ if uploaded_file is not None:
 
     # 데이터 미리보기
     st.subheader("📊 업로드된 데이터")
+    st.text("✔️ 공통 정보")
     st.table(common_info)
     # st.dataframe(product_info)
 
@@ -32,6 +28,7 @@ if uploaded_file is not None:
     product_info["타입"] = "기본"
     product_info = product_info[["선택", "타입"]+cols]
 
+    st.text("📦 제품 목록")
     # ✅ 전체 선택 기능을 세션 상태에 저장
     if "selected_rows" not in st.session_state:
         st.session_state.selected_rows = product_info.copy()  # 초기값 설정
@@ -62,7 +59,7 @@ if uploaded_file is not None:
     selected_products = edited_df[edited_df["선택"] == True]
 
     # 선택된 데이터 표시
-    st.subheader("📄 선택된 품목")
+    st.subheader("📄 출력 예정 품목")
     if not selected_products.empty:
         st.dataframe(selected_products.drop(columns=["선택"], axis=1).reset_index(drop=True))
     else:
