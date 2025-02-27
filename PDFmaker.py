@@ -15,6 +15,8 @@ import pandas as pd
 
 
 def create_pdf(common_info, selected_products):
+    common_info["len"] = len(selected_products)
+
     buffer = BytesIO()
 
     # font 설정
@@ -50,7 +52,7 @@ def create_single_PDF(common_info, prd_info):
         img = Image(image_path, width=167, height=50)
 
     common_data = [
-        ["거래처", f"{prd_info['주문자']}", f"{len(prd_info)}", "STRAS 생산 의뢰서", "발주", "갑피", "저부", "출고"],
+        ["거래처", f"{prd_info['주문자']}", f"{common_info['len']}", "STRAS 생산 의뢰서", "발주", "갑피", "저부", "출고"],
         ["소비자", f"{prd_info['적요']}", img, "", f"{common_info['po_no']}", "", "", ""],
         ["디자인 NO", f"{prd_info['CODE']}", "", "", "", "", "", ""],
         ["", f"{prd_info['순번']}", "", "", "", "", "", ""]
@@ -177,12 +179,6 @@ def create_single_PDF(common_info, prd_info):
 
     # ✅ 테이블을 Story에 추가하여 PDF 생성
     elements = [top_table, layout, bottom_table_upper, bottom_table]
-
-
-    # table_x = width - table_width  # 우측 정렬 (여백 고려)
-    # table_y = height  # 상단에서 50만큼 내려서 배치
-    # doc.build(elements,
-    #           onFirstPage=lambda c, _: table.wrapOn(c, width, height) or table.drawOn(c, table_x, table_y))
 
     return elements
 

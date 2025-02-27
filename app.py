@@ -1,7 +1,7 @@
 import streamlit as st
 
-from POM import *
-from makePDF import create_pdf
+from DFmanager import *
+from PDFmaker import create_pdf
 
 # 제목
 st.title("📄 STRAS 작업지시서 생성기")

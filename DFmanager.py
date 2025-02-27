@@ -61,6 +61,7 @@ def update_last(df):
 
 	return pd.DataFrame(new_data)
 
+
 if __name__ == "__main__":
 	df = pd.read_excel("test_data/Ecount.xlsx")
 	print(get_common_info(df))
