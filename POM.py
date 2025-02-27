@@ -1,0 +1,52 @@
+import pandas as pd
+
+def get_common_info(df):
+	po_no = list(df.iloc[0])[0].split(":")[1].strip()
+	customer = list(df.iloc[1])[0].split(":")[1].strip()
+	warehouse = list(df.iloc[2])[0].split(":")[1].strip()
+
+	result = {
+		"po_no":po_no,
+		"customer":customer,
+		"warehouse":warehouse
+
+	}
+
+	return result
+
+def get_product_info(df):
+	# 데이터 정리 (컬럼명 추출 및 필요 없는 행 제거)
+	df_cleaned = df.iloc[4:].reset_index(drop=True)
+	df_cleaned.columns = df_cleaned.iloc[0]  # 첫 번째 행을 컬럼명으로 지정
+	df_product = df_cleaned[1:-2].reset_index(drop=True)
+
+	num = list(df_cleaned.iloc[-2])[5]
+	df_product = manage_product_info(df_product)
+
+	return num, df_product
+
+
+def manage_product_info(df):
+	expanded_data = []
+	for _, row in df.iterrows():
+		n = row["수량(단위포함)"]
+		sizes = row["규격"].split(",")
+
+		if n == len(sizes):
+			for i, s in enumerate(sizes):
+				duplicated_row = row.copy()
+				duplicated_row["규격"] = s
+				duplicated_row["수량(단위포함)"] = 1
+				expanded_data.append(duplicated_row)
+
+	result = pd.DataFrame(expanded_data)
+	result["순번"] = range(1, len(result)+1)
+	return result
+
+if __name__ == "__main__":
+	df = pd.read_excel("test_data/Ecount.xlsx")
+	print(get_common_info(df))
+	n, df = get_product_info(df)
+	print(manage_product_info(df))
+
+
