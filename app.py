@@ -6,6 +6,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from POM import *
+from makePDF import create_pdf
 
 # 제목
 st.title("📄 작업지시서 생성기")
@@ -23,38 +24,52 @@ if uploaded_file is not None:
     # 데이터 미리보기
     st.subheader("📊 업로드된 데이터")
     st.table(common_info)
-    st.dataframe(product_info)
+    # st.dataframe(product_info)
 
-    # PDF 생성 함수
-    def create_pdf(dataframe):
-        buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4)
-        elements = []
+    # ✅ DataFrame에 체크박스 컬럼 추가
+    cols = list(product_info.columns)
+    product_info["선택"] = True
+    product_info["타입"] = "기본"
+    product_info = product_info[["선택", "타입"]+cols]
 
-        # 테이블 데이터 준비
-        data = [["번호", "품목코드", "품목명", "수량", "규격(사이즈)", "굽높이", "발볼", "추가요청사항"]]  # 헤더 추가
-        for _, row in dataframe.iterrows():
-            data.append([row["번호"], row["품목코드"], row["품목명"], row["수량"], row["규격(사이즈)"], row["굽높이"], row["발볼"], row["추가요청사항"]])
+    # ✅ 전체 선택 기능을 세션 상태에 저장
+    if "selected_rows" not in st.session_state:
+        st.session_state.selected_rows = product_info.copy()  # 초기값 설정
 
-        # 테이블 스타일 적용
-        table = Table(data, colWidths=[30, 80, 150, 50, 60, 60, 60, 80])
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ]))
 
-        # PDF 문서에 테이블 추가
-        elements.append(table)
-        doc.build(elements)
-        buffer.seek(0)
-        return buffer
+    # ✅ 전체 선택 버튼 기능
+    def toggle_all():
+        is_selected = not all(st.session_state.selected_rows["선택"])
+        st.session_state.selected_rows["선택"] = is_selected  # 전체 선택/해제
+        st.rerun()  # 페이지 리프레시
+
+
+    # 🔘 전체 선택/해제 버튼
+    st.button("🔘 전체 선택/해제", on_click=toggle_all)
+
+    # ✅ 사용자 입력 가능한 테이블 생성 (체크박스 포함)
+    edited_df = st.data_editor(
+        st.session_state.selected_rows,  # 세션 상태의 DataFrame 사용
+        column_config={"선택": st.column_config.CheckboxColumn("선택"),
+                       "타입": st.column_config.SelectboxColumn("타입", options=["기본", "지퍼 안쪽", "실외용", "Withus"]),
+                       },
+
+        use_container_width=True,
+        hide_index=True  # ✅ 행번호(인덱스) 숨기기
+    )
+
+    # ✅ 체크된 행만 필터링
+    selected_products = edited_df[edited_df["선택"] == True]
+
+    # 선택된 데이터 표시
+    st.subheader("📄 선택된 품목")
+    if not selected_products.empty:
+        st.dataframe(selected_products.drop(columns=["선택"], axis=1).reset_index(drop=True))
+    else:
+        st.text("품목이 선택되지 않았습니다.")
+
 
     # 버튼 클릭 시 PDF 생성
     if st.button("📄 작업지시서 PDF 생성"):
-        pdf_buffer = create_pdf(df_work_order)
+        pdf_buffer = create_pdf(common_info, selected_products)
         st.download_button(label="📥 PDF 다운로드", data=pdf_buffer, file_name="작업지시서.pdf", mime="application/pdf")

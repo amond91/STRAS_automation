@@ -9,7 +9,6 @@ def get_common_info(df):
 		"po_no":po_no,
 		"customer":customer,
 		"warehouse":warehouse
-
 	}
 
 	return result
@@ -22,12 +21,15 @@ def get_product_info(df):
 
 	num = list(df_cleaned.iloc[-2])[5]
 	df_product = manage_product_info(df_product)
+	df_product = update_last(df_product)
 
 	return num, df_product
 
 
 def manage_product_info(df):
 	expanded_data = []
+	df["CAT"] = df["품목명"].map(lambda x: x.split("/")[0].strip())
+	df["CODE"] = df["품목명"].map(lambda x: x.split("/")[1].strip())
 	for _, row in df.iterrows():
 		n = row["수량(단위포함)"]
 		sizes = row["규격"].split(",")
@@ -43,10 +45,28 @@ def manage_product_info(df):
 	result["순번"] = range(1, len(result)+1)
 	return result
 
+
+def update_last(df):
+	index_df = pd.read_excel("data/라스트_굽_중창.xlsx")
+	index_df = index_df.set_index(index_df["인덱스"])
+
+	new_data = []
+
+	for _, row in df.iterrows():
+		prd_index = f"{row['품목그룹1명']}@{row['발볼']}@{row['굽높이']}"
+		row["라스트"] = index_df.loc[prd_index]["라스트"]
+		row["사용굽"] = index_df.loc[prd_index]["사용굽"]
+		row["중창"] = index_df.loc[prd_index]["중창"]
+		new_data.append(row)
+
+	return pd.DataFrame(new_data)
+
 if __name__ == "__main__":
 	df = pd.read_excel("test_data/Ecount.xlsx")
 	print(get_common_info(df))
 	n, df = get_product_info(df)
-	print(manage_product_info(df))
+	df = manage_product_info(df)
+
+	df.to_csv("test.csv")
 
 
