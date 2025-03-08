@@ -1,3 +1,5 @@
+import time
+
 import streamlit as st
 
 from DFmanager import *
@@ -6,15 +8,26 @@ from PDFmaker import create_pdf
 # 제목
 st.title("📄 STRAS 작업지시서 생성기")
 
+# ✅ 세션 상태를 사용하여 파일 저장
+if "uploaded_file" not in st.session_state:
+    st.session_state.uploaded_file = None  # 업로드된 파일
+    st.session_state.df = None  # 데이터프레임 저장
+
 # 파일 업로드
 uploaded_file = st.file_uploader("📂 발주서(엑셀 파일)을 업로드하세요", type=["xlsx"])
 
 if uploaded_file is not None:
-    # 엑셀 데이터 불러오기
-    df = pd.read_excel(uploaded_file)
+    if uploaded_file != st.session_state.uploaded_file:
+        st.session_state.uploaded_file = uploaded_file
+        st.session_state.df = pd.read_excel(uploaded_file)  # 새로운 데이터 로드
+        st.session_state.selected_rows = None  # 기존 선택 데이터 초기화
+        st.rerun()  # 페이지 새로고침
 
-    common_info = get_common_info(df)
+df = st.session_state.df
+
+if df is not None:
     n, product_info = get_product_info(df)
+    common_info = get_common_info(n, df)
 
     # 데이터 미리보기
     st.subheader("📊 업로드된 데이터")
@@ -30,8 +43,8 @@ if uploaded_file is not None:
 
     st.text("📦 제품 목록")
     # ✅ 전체 선택 기능을 세션 상태에 저장
-    if "selected_rows" not in st.session_state:
-        st.session_state.selected_rows = product_info.copy()  # 초기값 설정
+    if "selected_rows" not in st.session_state or st.session_state.selected_rows is None:
+        st.session_state.selected_rows = product_info.copy()
 
 
     # ✅ 전체 선택 버튼 기능
@@ -57,6 +70,7 @@ if uploaded_file is not None:
 
     # ✅ 체크된 행만 필터링
     selected_products = edited_df[edited_df["선택"] == True]
+    selected_products["순번"] = range(1, len(selected_products)+1)
 
     # 선택된 데이터 표시
     st.subheader("📄 출력 예정 품목")

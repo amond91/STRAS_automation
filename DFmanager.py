@@ -1,6 +1,6 @@
 import pandas as pd
 
-def get_common_info(df):
+def get_common_info(n, df):
 	po_no = list(df.iloc[0])[0].split(":")[1].strip()
 	customer = list(df.iloc[1])[0].split(":")[1].strip()
 	warehouse = list(df.iloc[2])[0].split(":")[1].strip()
@@ -8,7 +8,8 @@ def get_common_info(df):
 	result = {
 		"po_no":po_no,
 		"customer":customer,
-		"warehouse":warehouse
+		"warehouse":warehouse,
+		"num_of_prd": n
 	}
 
 	return result
@@ -30,20 +31,26 @@ def manage_product_info(df):
 	expanded_data = []
 	df["CAT"] = df["품목명"].map(lambda x: x.split("/")[0].strip())
 	df["CODE"] = df["품목명"].map(lambda x: x.split("/")[1].strip())
-	for _, row in df.iterrows():
-		n = row["수량(단위포함)"]
-		sizes = row["규격"].split(",")
+	# for id, row in df.iterrows():
+	# 	duplicated_row = row.copy()
+	# 	duplicated_row["순번"] = id + 1
+	# 	sizes = str(row["규격"]).split(",")
+	# 	size_list = []
+	# 	for size in sizes:
+	# 		if "-" not in size:
+	# 			size_list.append((size, 1))
+	# 		else:
+	# 			siz, num = size.split("-")
+	# 			size_list.append((siz, num))
+	#
+	# 	print(size_list)
+	# 	duplicated_row["SIZE"] = str(size_list)
+	# 	expanded_data.append(duplicated_row)
+	#
+	# result = pd.DataFrame(expanded_data)
+	df["순번"] = range(1, len(df) + 1)
 
-		if n == len(sizes):
-			for i, s in enumerate(sizes):
-				duplicated_row = row.copy()
-				duplicated_row["규격"] = s
-				duplicated_row["수량(단위포함)"] = 1
-				expanded_data.append(duplicated_row)
-
-	result = pd.DataFrame(expanded_data)
-	result["순번"] = range(1, len(result)+1)
-	return result
+	return df
 
 
 def update_last(df):

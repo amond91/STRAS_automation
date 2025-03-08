@@ -1,31 +1,32 @@
 from reportlab.lib.pagesizes import A4, landscape
-from reportlab.pdfgen import canvas
 
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Spacer, PageBreak
-from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Spacer, PageBreak, Paragraph
+from reportlab.lib import colors, styles, units
 
 import os
 from io import BytesIO
 
-from reportlab.lib.utils import ImageReader
 import pandas as pd
+
+from PDFtablestyle import *
 
 
 def create_pdf(common_info, selected_products):
     common_info["len"] = len(selected_products)
-
     buffer = BytesIO()
 
     # font 설정
     font_path = "font/NotoSansKR-Regular.ttf"
     pdfmetrics.registerFont(TTFont("NotoSansKR", font_path))
 
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), topMargin=50, bottomMargin=50, leftMargin=50, rightMargin=50)
+    # PDF 문서 설정
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4),
+                            topMargin=15, bottomMargin=15, leftMargin=50, rightMargin=50)
     elements = []
 
+    # 각 PDF 페이지별 설정
     for _, row in selected_products.iterrows():
         elements += create_single_PDF(common_info, dict(row))
         elements.append(PageBreak())
@@ -36,7 +37,17 @@ def create_pdf(common_info, selected_products):
 
 
 def create_single_PDF(common_info, prd_info):
-    width, height = landscape(A4)
+    title_style = styles.ParagraphStyle(
+        name="TitleStyle",
+        fontName="NotoSansKR",
+        fontSize=18,
+        leading=22,  # ✅ 줄 간격 조절
+        alignment=1,  # ✅ 가운데 정렬 (0=왼쪽, 1=가운데, 2=오른쪽)
+        spaceAfter=0.3 * units.cm  # ✅ 제목 아래 여백 추가
+    )
+
+    title_text = f"STRAS 생산 의뢰서 - {prd_info['CODE']} ({prd_info['순번']} / {common_info['len']})"
+    title = Paragraph(title_text, title_style)
 
     # Nan 값 공백으로 대체
     for k in prd_info.keys():
@@ -51,28 +62,28 @@ def create_single_PDF(common_info, prd_info):
         image_path = "images/stras_logo.jpg"
         img = Image(image_path, width=167, height=50)
 
+    order_data = [["거래처", f"{prd_info['주문자']}"],
+                  ["소비자", f"{prd_info['적요']}"]]
+    order_table = Table(order_data, colWidths=[70, 630])
+    order_table.setStyle(default_style)
+
+    top_top_table = Table([[order_table]])
+
+
     common_data = [
-        ["거래처", f"{prd_info['주문자']}", f"{common_info['len']}", "STRAS 생산 의뢰서", "발주", "갑피", "저부", "출고"],
-        ["소비자", f"{prd_info['적요']}", img, "", f"{common_info['po_no']}", "", "", ""],
-        ["디자인 NO", f"{prd_info['CODE']}", "", "", "", "", "", ""],
-        ["", f"{prd_info['순번']}", "", "", "", "", "", ""]
+        ["디자인 NO", f"{prd_info['CODE']}", img, "",  "발주", "갑피", "저부", "출고"],
+        ["순번", f"{prd_info['순번']}", "", "", f"{common_info['po_no']}", "", "", ""],
+        ["전체 수량", f"{common_info['num_of_prd']}", "", "", "", "", "", ""],
+        ["작업 수량", f"{prd_info['수량(단위포함)']}", "", "", "", "", "", ""]
     ]
 
-    # ✅ 테이블 스타일 설정
-    style1 = TableStyle([
-        ('SPAN', (2, 1), (3, 3)),
-        ('ALIGN', (2, 1), (3, 3), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, -1), 'NotoSansKR'),  # 폰트 설정
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),  # 테두리 설정
-    ])
-
     # ✅ 전체 너비 : 700
-    col_widths = [90, 90, 40, 200, 70, 70, 70, 70]
+    col_widths = [70, 110, 40, 200, 70, 70, 70, 70]
 
     # ✅ 테이블 생성
-    # common_table = Table(common_data)
+
     common_table = Table(common_data, colWidths=col_widths)
-    common_table.setStyle(style1)
+    common_table.setStyle(table_style_1)
 
     top_table = Table([[common_table]])
 
@@ -98,27 +109,13 @@ def create_single_PDF(common_info, prd_info):
         ["까래", f"{prd_info['까래']}", ""]
     ]
 
-    style2 = TableStyle([
-        ('FONTNAME', (0, 0), (-1, -1), 'NotoSansKR'),  # 폰트 설정
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),  # 테두리 설정
-    ])
-
-    no_padding = TableStyle([
-        ('LEFTPADDING', (0, 0), (-1, -1), 0),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
-        ('TOPPADDING', (0, 0), (-1, -1), 0),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
-        ('ALIGN', (1, 0), (1, 0), 'CENTER'),
-        ('VALIGN', (1, 0), (1, 0), 'MIDDLE')
-    ])
-
     col_widths = [70, 180, 80]
 
     prd_table1 = Table(prd_data1, colWidths=col_widths)
-    prd_table1.setStyle(style2)
+    prd_table1.setStyle(default_style)
 
     prd_table2 = Table(prd_data2, colWidths=col_widths)
-    prd_table2.setStyle(style2)
+    prd_table2.setStyle(default_style)
 
     prd_image_path = f"images/products/{prd_info['CODE']}.jpg"
     if not os.path.exists(prd_image_path):
@@ -139,7 +136,6 @@ def create_single_PDF(common_info, prd_info):
     bottom_data1 = [
         ["특이사항", f"{prd_info['추가요청사항']}"],
         ["", requirements],
-        ["", f"{prd_info['규격']}({prd_info['수량(단위포함)']})"]
     ]
 
     bottom_data2 = [
@@ -157,28 +153,34 @@ def create_single_PDF(common_info, prd_info):
         ["", "", "", "", "", "", "", "", "", "", "", "", ],
         ["", "", "", "", "", "", "", "", "", "", "", "", ],
     ]
-    size_index = (int(prd_info['규격'])-215)//5
-    bottom_data3[1][size_index] = 1
 
-    style3 = TableStyle([
-        ('FONTNAME', (0, 0), (-1, -1), 'NotoSansKR'),  # 폰트 설정
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),  # 테두리 설정
-    ])
+    sizes = str(prd_info["규격"]).split(",")
+    print(sizes)
+    for size in sizes:
+        if "-" not in size:
+            size_index = (int(size) - 215) // 5
+            bottom_data3[1][size_index] = 1
+        else:
+            s, n = size.split("-")
+            size_index = (int(s) - 215) // 5
+            bottom_data3[1][size_index] = n
+
+    bottom_data3[1][-1] = prd_info['수량(단위포함)']
 
     bottom_table1 = Table(bottom_data1, colWidths=[70, 630])
-    bottom_table1.setStyle((style3))
+    bottom_table1.setStyle(default_style)
     bottom_table_upper = Table([[bottom_table1]])
 
     bottom_table2 = Table(bottom_data2, colWidths=[70, 130])
-    bottom_table2.setStyle((style3))
+    bottom_table2.setStyle(default_style)
     bottom_table3 = Table(bottom_data3)
-    bottom_table3.setStyle((style3))
+    bottom_table3.setStyle(default_style)
 
     bottom_table = Table([[bottom_table2, bottom_table3]])
 
 
     # ✅ 테이블을 Story에 추가하여 PDF 생성
-    elements = [top_table, layout, bottom_table_upper, bottom_table]
+    elements = [title, top_table, top_top_table, layout, bottom_table_upper, bottom_table]
 
     return elements
 
