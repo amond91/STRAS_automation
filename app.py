@@ -80,24 +80,24 @@ if df is not None:
         st.text("품목이 선택되지 않았습니다.")
 
         # PDF 저장 경로 설정
-        pdf_path = "static/작업지시서.pdf"
+    pdf_path = "static/작업지시서.pdf"
 
-        # PDF 생성 및 저장
-        if st.button("📄 작업지시서 PDF 생성"):
-            pdf_buffer = create_pdf(common_info, selected_products)
+    # PDF 생성 및 저장
+    if st.button("📄 작업지시서 PDF 생성"):
+        pdf_buffer = create_pdf(common_info, selected_products)
 
-            # static 디렉토리 생성 (없을 경우)
-            os.makedirs("static", exist_ok=True)
+        # static 디렉토리 생성 (없을 경우)
+        os.makedirs("static", exist_ok=True)
 
-            # PDF 파일 저장
-            with open(pdf_path, "wb") as f:
-                f.write(pdf_buffer.getvalue())
+        # PDF 파일 저장
+        with open(pdf_path, "wb") as f:
+            f.write(pdf_buffer.getvalue())
 
-            # JavaScript를 실행하여 새 창에서 PDF 열기
-            pdf_url = f"http://localhost:8501/{pdf_path}"  # Streamlit 기본 포트 (8501)
-            js_code = f"""
-            <script>
-                window.open("{pdf_url}", "_blank");
-            </script>
-            """
-            st.components.v1.html(js_code, height=0)  # 실행
+        # JavaScript를 실행하여 새 창에서 PDF 열기
+        pdf_url = f"http://localhost:8501/{pdf_path}"  # Streamlit 기본 포트 (8501)
+        js_code = f"""
+        <script>
+            window.open("{pdf_url}", "_blank");
+        </script>
+        """
+        st.components.v1.html(js_code, height=0)  # 실행
