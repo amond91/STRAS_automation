@@ -1,4 +1,6 @@
 import os
+from io import BytesIO
+import base64
 
 import streamlit as st
 
@@ -83,4 +85,19 @@ if df is not None:
     # 버튼 클릭 시 PDF 생성
     if st.button("📄 작업지시서 PDF 생성"):
         pdf_buffer = create_pdf(common_info, selected_products)
-        st.download_button(label="📥 PDF 다운로드", data=pdf_buffer, file_name="작업지시서.pdf", mime="application/pdf")
+
+        # PDF를 base64로 변환하여 브라우저에서 직접 열기
+        base64_pdf = base64.b64encode(pdf_buffer.getvalue()).decode("utf-8")
+        # PDF를 iframe에 삽입
+        pdf_html = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000"></iframe>'
+
+        # Streamlit에서 표시
+        st.markdown(pdf_html, unsafe_allow_html=True)
+
+        # 다운로드 버튼
+        # st.download_button(
+        #     label="📥 PDF 다운로드",
+        #     data=pdf_buffer,
+        #     file_name="작업지시서.pdf",
+        #     mime="application/pdf"
+        # )

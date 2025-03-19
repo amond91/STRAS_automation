@@ -3,7 +3,7 @@ from reportlab.platypus import TableStyle
 
 default_style = [
 	('FONTNAME', (0, 0), (-1, -1), 'NotoSansKR'),  # 폰트 설정
-	('FONTSIZE', (0, 0), (-1, -1), 12),  # 폰트 사이즈
+	# ('FONTSIZE', (0, 0), (-1, -1), 15),  # 폰트 사이즈
 	('GRID', (0, 0), (-1, -1), 0.5, colors.black),  # 테두리 추가
 ]
 

@@ -41,9 +41,9 @@ def create_single_PDF(common_info, prd_info):
     title_style = styles.ParagraphStyle(
         name="TitleStyle",
         fontName="NotoSansKR",
-        fontSize=15,
+        fontSize=13,
         leading=22,  # ✅ 줄 간격 조절
-        alignment=1,  # ✅ 가운데 정렬 (0=왼쪽, 1=가운데, 2=오른쪽)
+        alignment=0,  # ✅ 가운데 정렬 (0=왼쪽, 1=가운데, 2=오른쪽)
         spaceAfter=0.3 * units.cm  # ✅ 제목 아래 여백 추가
     )
 
@@ -141,6 +141,7 @@ def create_single_PDF(common_info, prd_info):
 
     bottom_data1 = [
         ["특이사항", f"{prd_info['추가요청사항']}"],
+        ["옵션", f"{prd_info['가보시/밑창']}"],
         ["", requirements],
     ]
 
