@@ -11,6 +11,7 @@ from io import BytesIO
 import pandas as pd
 
 from PDFtablestyle import *
+from R2api import read_file_r2
 
 
 def create_pdf(common_info, selected_products):
@@ -40,13 +41,13 @@ def create_single_PDF(common_info, prd_info):
     title_style = styles.ParagraphStyle(
         name="TitleStyle",
         fontName="NotoSansKR",
-        fontSize=18,
+        fontSize=15,
         leading=22,  # ✅ 줄 간격 조절
         alignment=1,  # ✅ 가운데 정렬 (0=왼쪽, 1=가운데, 2=오른쪽)
         spaceAfter=0.3 * units.cm  # ✅ 제목 아래 여백 추가
     )
 
-    title_text = f"STRAS 생산 의뢰서 - {prd_info['CODE']} ({prd_info['순번']} / {common_info['len']})"
+    title_text = f"STRAS 생산 의뢰서 - {prd_info['주문자']} ({prd_info['순번']} / {common_info['len']})"
     title = Paragraph(title_text, title_style)
 
     # Nan 값 공백으로 대체
@@ -118,11 +119,16 @@ def create_single_PDF(common_info, prd_info):
     prd_table2.setStyle(default_style)
 
     prd_image_path = f"images/products/{prd_info['CODE']}.jpg"
-    if not os.path.exists(prd_image_path):
+    res = read_file_r2(prd_image_path)
+    if not res:
         prd_image_path = "images/products/no_product.jpg"
 
+    # 이미지 설정
     scale = 2.7
-    prd_img = Image(prd_image_path, width=750/scale, height=500/scale)
+    if isinstance(res, BytesIO):  # R2에서 받은 이미지가 BytesIO인지 확인
+        prd_img = Image(res, width=750 / scale, height=500 / scale)
+    else:
+        prd_img = Image("images/products/no_product.jpg", width=750/scale, height=500/scale)
 
     left_table = Table([[prd_table1], [prd_table2]])
     layout = Table([[left_table, prd_img]])
@@ -155,7 +161,6 @@ def create_single_PDF(common_info, prd_info):
     ]
 
     sizes = str(prd_info["규격"]).split(",")
-    print(sizes)
     for size in sizes:
         if "-" not in size:
             size_index = (int(size) - 215) // 5

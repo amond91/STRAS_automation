@@ -1,4 +1,5 @@
-import time
+import base64
+import os
 
 import streamlit as st
 
@@ -83,4 +84,16 @@ if df is not None:
     # 버튼 클릭 시 PDF 생성
     if st.button("📄 작업지시서 PDF 생성"):
         pdf_buffer = create_pdf(common_info, selected_products)
-        st.download_button(label="📥 PDF 다운로드", data=pdf_buffer, file_name="작업지시서.pdf", mime="application/pdf")
+
+        # PDF 파일 저장 (Streamlit Cloud에서도 사용 가능)
+        pdf_path = "/tmp/작업지시서.pdf"  # Linux 기반 경로 (Streamlit Cloud는 Linux 환경)
+        with open(pdf_path, "wb") as f:
+            f.write(pdf_buffer.getvalue())
+
+        # PDF를 새 창에서 열기
+        pdf_url = f"http://localhost:8501/{pdf_path}"
+        st.markdown(f'<a href="{pdf_url}" target="_blank">📂 새 창에서 PDF 미리보기</a>', unsafe_allow_html=True)
+
+        # 다운로드 버튼 추가
+        with open(pdf_path, "rb") as f:
+            st.download_button("📥 PDF 다운로드", f, file_name="작업지시서.pdf", mime="application/pdf")

@@ -1,4 +1,5 @@
 import pandas as pd
+from R2api import read_file_r2
 
 def get_common_info(n, df):
 	po_no = list(df.iloc[0])[0].split(":")[1].strip()
@@ -54,7 +55,7 @@ def manage_product_info(df):
 
 
 def update_last(df):
-	index_df = pd.read_excel("data/라스트_굽_중창.xlsx")
+	index_df = pd.read_excel(read_file_r2("data/라스트_굽_중창.xlsx"))
 	index_df = index_df.set_index(index_df["인덱스"])
 
 	new_data = []

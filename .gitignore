@@ -47,6 +47,9 @@ Temporary Items
 
 # AWS User-specific
 .idea/**/aws.xml
+__pycahce__
+__pycahce__/*
+
 
 # Generated files
 .idea/**/contentModel.xml
