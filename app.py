@@ -94,7 +94,7 @@ if df is not None:
             f.write(pdf_buffer.getvalue())
 
         # JavaScript를 실행하여 새 창에서 PDF 열기
-        pdf_url = f"http://localhost:8501/{pdf_path}"  # Streamlit 기본 포트 (8501)
+        pdf_url = f"https://strasautomation.streamlit.app/{pdf_path}"  # Streamlit 기본 포트 (8501)
         js_code = f"""
         <script>
             window.open("{pdf_url}", "_blank");
