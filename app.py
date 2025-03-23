@@ -7,6 +7,8 @@ import streamlit as st
 from DFmanager import *
 from PDFmaker import create_pdf
 
+from R2api import upload_to_r2
+
 # 제목
 st.title("📄 STRAS 작업지시서 생성기")
 
@@ -82,22 +84,44 @@ if df is not None:
         st.text("품목이 선택되지 않았습니다.")
 
 
-    # 버튼 클릭 시 PDF 생성
+    # 버튼 클릭 시 PDF 생성 ver1
+    # if st.button("📄 작업지시서 PDF 생성"):
+    #     pdf_buffer = create_pdf(common_info, selected_products)
+    #
+    #     # PDF를 base64로 변환하여 브라우저에서 직접 열기
+    #     base64_pdf = base64.b64encode(pdf_buffer.getvalue()).decode("utf-8")
+    #     # PDF를 iframe에 삽입
+    #     pdf_html = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000"></iframe>'
+    #
+    #     # Streamlit에서 표시
+    #     st.markdown(pdf_html, unsafe_allow_html=True)
+    #
+    #     # 다운로드 버튼
+    #     # st.download_button(
+    #     #     label="📥 PDF 다운로드",
+    #     #     data=pdf_buffer,
+    #     #     file_name="작업지시서.pdf",
+    #     #     mime="application/pdf"
+    #     # )
+
     if st.button("📄 작업지시서 PDF 생성"):
         pdf_buffer = create_pdf(common_info, selected_products)
 
-        # PDF를 base64로 변환하여 브라우저에서 직접 열기
-        base64_pdf = base64.b64encode(pdf_buffer.getvalue()).decode("utf-8")
-        # PDF를 iframe에 삽입
-        pdf_html = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000"></iframe>'
+        # R2에 업로드
+        pdf_url = upload_to_r2(pdf_buffer, "static/temp.pdf")  # 객체 키는 원하는 경로로 조정 가능
 
-        # Streamlit에서 표시
-        st.markdown(pdf_html, unsafe_allow_html=True)
+        # 자동 새 창 열기 (JavaScript)
+        js = f"""
+        <script>
+        window.open("{pdf_url}", "_blank");
+        </script>
+        """
+        st.components.v1.html(js, height=0)
 
         # 다운로드 버튼
-        # st.download_button(
-        #     label="📥 PDF 다운로드",
-        #     data=pdf_buffer,
-        #     file_name="작업지시서.pdf",
-        #     mime="application/pdf"
-        # )
+        st.download_button(
+            label="📥 PDF 다운로드",
+            data=pdf_buffer,
+            file_name="작업지시서.pdf",
+            mime="application/pdf"
+        )
