@@ -90,8 +90,8 @@ def create_single_PDF(common_info, prd_info):
 
     common_data = [
         ["디자인 NO", f"{prd_info['CODE']}", img, "",  "발주", "갑피", "저부", "출고"],
-        ["전체 수량", f"{common_info['num_of_prd']}", "", "", f"{common_info['po_no']}", "", "", ""],
-        ["", "", "", "", "", "", "", ""]
+        ["", "", "", "", f"{common_info['po_no']}", "", "", ""],
+        ["전체 수량", f"{common_info['num_of_prd']}", "", "", "", "", "", ""]
     ]
 
     # ✅ 전체 너비 : 700
@@ -119,14 +119,14 @@ def create_single_PDF(common_info, prd_info):
 
     prd_data2 = [
         ["라스트", f"{prd_info['라스트']}", ""],
-        ["굽", f"{prd_info['사용굽']}", f"{heel_hights}"],
+        ["굽", f"{prd_info['사용굽']}", f"{heel_hights} cm"],
         ["중창", f"{prd_info['중창']}", ""],
         ["중창싸개", f"{prd_info['중창싸게']}", ""],
         ["창", f"{prd_info['창']}", ""],
         ["까래", f"{prd_info['까래']}", ""]
     ]
 
-    col_widths = [80, 170, 80]
+    col_widths = [80, 190, 60]
 
     prd_table1 = Table(prd_data1, colWidths=col_widths, rowHeights=[ROWH]*len(prd_data1))
     prd_table1.setStyle(prd_style_1)
@@ -162,12 +162,16 @@ def create_single_PDF(common_info, prd_info):
         ["소비자", f"{prd_info['적요']}"]
     ]
 
+    if prd_info['추가기장']:
+        extra = int(prd_info['추가기장'])
+    else:
+        extra = ''
     bottom_data2 = [
         ["부츠 통", ""],
         ["종아리 둘레", f"{prd_info['종아리둘레']}"],
         ["종아리 높이", f"{prd_info['종아리높이']}"],
-        ["추가 기장", f"(+) {prd_info['추가기장']}cm"],
-        ["총 기장", f"{prd_info['높이']}cm"],
+        ["추가 기장", f"(+) {extra} cm"],
+        ["총 기장", f"{prd_info['높이']} cm"],
     ]
 
     bottom_data3 = [
@@ -195,7 +199,7 @@ def create_single_PDF(common_info, prd_info):
     bottom_table_upper = Table([[bottom_table1]])
 
     bottom_table2 = Table(bottom_data2, colWidths=[80, 120], rowHeights=[ROWH]*len(bottom_data2))
-    bottom_table2.setStyle(table_style_2)
+    bottom_table2.setStyle(table_style_2_1)
     bottom_table3 = Table(bottom_data3, colWidths=[500/14]*14, rowHeights=[ROWH]*len(bottom_data3))
     bottom_table3.setStyle(table_style_3)
 

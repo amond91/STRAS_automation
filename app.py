@@ -35,8 +35,8 @@ if df is not None:
 
     # 데이터 미리보기
     st.subheader("📊 업로드된 데이터")
-    st.text("✔️ 공통 정보")
-    st.table(common_info)
+    st.text(f"✔️ PO NUMBER: {common_info['po_no']}")
+    # st.table(common_info)
     # st.dataframe(product_info)
 
     # ✅ DataFrame에 체크박스 컬럼 추가
