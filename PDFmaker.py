@@ -181,11 +181,11 @@ def create_single_PDF(common_info, prd_info):
     sizes = str(prd_info["규격"]).split(",")
     for size in sizes:
         if "-" not in size:
-            size_index = (int(size) - 215) // 5
+            size_index = (int(size) - 205) // 5
             bottom_data3[1][size_index] = 1
         else:
             s, n = size.split("-")
-            size_index = (int(s) - 215) // 5
+            size_index = (int(s) - 205) // 5
             bottom_data3[1][size_index] = n
 
     bottom_data3[1][-1] = prd_info['수량(단위포함)']
