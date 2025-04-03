@@ -49,14 +49,13 @@ def create_pdf(common_info, selected_products):
 
 
 def create_single_PDF(common_info, prd_info):
-    # title_style = styles.ParagraphStyle(
-    #     name="TitleStyle",
-    #     fontName="NotoSansKR",
-    #     fontSize=13,
-    #     leading=22,  # ✅ 줄 간격 조절
-    #     alignment=0,  # ✅ 가운데 정렬 (0=왼쪽, 1=가운데, 2=오른쪽)
-    #     spaceAfter=0.3 * units.cm  # ✅ 제목 아래 여백 추가
-    # )
+    paragraph_style = styles.ParagraphStyle(
+        name="pStyle",
+        fontName="NotoSansKR",
+        fontSize=13,
+        leading=16,  # ✅ 줄 간격 조절
+        alignment=0,  # ✅ 가운데 정렬 (0=왼쪽, 1=가운데, 2=오른쪽)
+    )
 
     # title_text = f"STRAS 생산 의뢰서 - {prd_info['주문자']} ({prd_info['순번']} / {common_info['len']})"
     # title = Paragraph(title_text, title_style)
@@ -115,11 +114,11 @@ def create_single_PDF(common_info, prd_info):
         ["장식", f"{prd_info['장식']}", zipper]
     ]
 
-    heel_hights = prd_info["굽높이"].split("cm")[0]
+    heel_heights = prd_info["굽높이"].split("cm")[0]
 
     prd_data2 = [
         ["라스트", f"{prd_info['라스트']}", ""],
-        ["굽", f"{prd_info['사용굽']}", f"{heel_hights} cm"],
+        ["굽", f"{prd_info['사용굽']}", f"{heel_heights} cm"],
         ["중창", f"{prd_info['중창']}", ""],
         ["중창싸개", f"{prd_info['중창싸게']}", ""],
         ["창", f"{prd_info['창']}", ""],
@@ -159,24 +158,25 @@ def create_single_PDF(common_info, prd_info):
         ["특이사항", f"{prd_info['추가요청사항']}"],
         ["옵션", f"{prd_info['가보시/밑창']}"],
         ["", requirements],
-        ["소비자", f"{prd_info['적요']}"]
+        ["소비자", Paragraph(f"{prd_info['적요']}", style=paragraph_style)],
+        ["", ""]
     ]
 
     if prd_info['추가기장']:
         extra = int(prd_info['추가기장'])
     else:
         extra = ''
+
+    total_length = int(prd_info['높이']) if prd_info['높이'] else ''
     bottom_data2 = [
-        ["부츠 통", ""],
         ["종아리 둘레", f"{prd_info['종아리둘레']}"],
         ["종아리 높이", f"{prd_info['종아리높이']}"],
         ["추가 기장", f"(+) {extra} cm"],
-        ["총 기장", f"{prd_info['높이']} cm"],
+        ["총 기장", f"{total_length} cm"],
     ]
 
     bottom_data3 = [
         ["", "210", "215", "220", "225", "230", "235", "240", "245", "250", "255", "260", "265", "계"],
-        ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ],
         ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ],
         ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ],
         ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ],
