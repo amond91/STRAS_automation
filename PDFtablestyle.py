@@ -23,6 +23,7 @@ table_style_1 = default_style + [
 	('ALIGN', (2, 0), (3, 2), 'CENTER'),
 	('BACKGROUND', (1, 0), (1, -1), colors.white),
 	('BACKGROUND', (2, 0), (3, 2), colors.white)
+
 ]
 
 prd_style_1 = default_style + [
