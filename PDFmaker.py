@@ -139,7 +139,7 @@ def create_single_PDF(common_info, prd_info):
         prd_image_path = "images/products/no_product.jpg"
 
     # 이미지 설정
-    scale = 2.7
+    scale = 2.3
     if isinstance(res, BytesIO):  # R2에서 받은 이미지가 BytesIO인지 확인
         prd_img = Image(res, width=750 / scale, height=500 / scale)
     else:
@@ -155,11 +155,11 @@ def create_single_PDF(common_info, prd_info):
         requirements = ""
 
     bottom_data1 = [
-        ["특이사항", f"{prd_info['추가요청사항']}"],
-        ["옵션", f"{prd_info['가보시/밑창']}"],
-        ["", requirements],
-        ["소비자", Paragraph(f"{prd_info['적요']}", style=paragraph_style)],
-        ["", ""]
+        ["특이사항", f"{prd_info['추가요청사항']}", "옵션", f"{prd_info['가보시/밑창']}"],
+        # ["옵션", f"{prd_info['가보시/밑창']}"],
+        ["", requirements, "", ""],
+        ["소비자", Paragraph(f"{prd_info['적요']}", style=paragraph_style), "", ""],
+        ["", "", "", ""]
     ]
 
     if prd_info['추가기장']:
@@ -183,18 +183,23 @@ def create_single_PDF(common_info, prd_info):
     ]
 
     sizes = str(prd_info["규격"]).split(",")
-    for size in sizes:
-        if "-" not in size:
-            size_index = (int(size) - 205) // 5
-            bottom_data3[1][size_index] = 1
-        else:
-            s, n = size.split("-")
-            size_index = (int(s) - 205) // 5
-            bottom_data3[1][size_index] = n
+    if len(sizes) == 1:
+        size = sizes[0]
+        size_index = (int(size) - 205) // 5
+        bottom_data3[1][size_index] = prd_info['수량(단위포함)']
+    else:
+        for size in sizes:
+            if "-" not in size:
+                size_index = (int(size) - 205) // 5
+                bottom_data3[1][size_index] = 1
+            else:
+                s, n = size.split("-")
+                size_index = (int(s) - 205) // 5
+                bottom_data3[1][size_index] = n
 
     bottom_data3[1][-1] = prd_info['수량(단위포함)']
 
-    bottom_table1 = Table(bottom_data1, colWidths=[80, 620], rowHeights=[ROWH]*len(bottom_data1))
+    bottom_table1 = Table(bottom_data1, colWidths=[80, 250, 80, 290], rowHeights=[ROWH]*len(bottom_data1))
     bottom_table1.setStyle(table_style_2)
     bottom_table_upper = Table([[bottom_table1]])
 
